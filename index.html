@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CardVault — Prezzi Reali, Spread & Autenticazione Carte</title>
+<meta name="description" content="Prezzi aggiornati di carte Pokémon, Magic, Yu-Gi-Oh. Confronto venduti vs in vendita su eBay e Cardmarket. Valutazione e autenticazione professionale.">
+<meta property="og:title" content="CardVault — Il prezzo reale delle tue carte">
+<meta property="og:description" content="Scopri quanto valgono davvero le tue carte collezionabili. Spread venduti/listing, alert variazioni, valutazione e autenticazione professionale.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,400&family=Fira+Code:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ── RESET & TOKENS ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 16px; }
+
+:root {
+  --gold:       #B8963E;
+  --gold-lt:    #D4AF5A;
+  --gold-dim:   rgba(184,150,62,0.15);
+  --ink:        #0A0A0B;
+  --ink2:       #111113;
+  --ink3:       #1A1A1D;
+  --surface:    #161619;
+  --border:     rgba(184,150,62,0.14);
+  --border-hi:  rgba(184,150,62,0.35);
+  --text:       #EDEBE4;
+  --muted:      #7A7670;
+  --faint:      #3A3835;
+  --green:      #52A878;
+  --red:        #C95A5A;
+  --blue:       #4F8FC0;
+  --radius:     3px;
+}
+
+body {
+  background: var(--ink);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  overflow-x: hidden;
+  cursor: default;
+}
+
+/* grain overlay */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+/* ── TYPOGRAPHY ── */
+.serif { font-family: 'Fraunces', serif; }
+.mono  { font-family: 'Fira Code', monospace; }
+
+/* ── LAYOUT UTILITIES ── */
+.container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 1; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  backdrop-filter: blur(24px) saturate(1.4);
+  background: rgba(10,10,11,0.82);
+  border-bottom: 1px solid var(--border);
+}
+.nav-inner {
+  max-width: 1180px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 2rem; height: 58px;
+}
+.logo {
+  font-family: 'Fraunces', serif;
+  font-size: 1.35rem; font-weight: 900;
+  color: var(--gold); text-decoration: none;
+  letter-spacing: -0.02em;
+}
+.logo em { font-style: italic; color: var(--text); font-weight: 300; }
+.nav-links { display: flex; align-items: center; gap: 0.2rem; list-style: none; }
+.nav-links a {
+  font-family: 'Fira Code', monospace; font-size: 0.72rem;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--muted); text-decoration: none;
+  padding: 0.4rem 0.8rem; border-radius: var(--radius);
+  transition: color 0.2s, background 0.2s;
+}
+.nav-links a:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+.nav-links .cta {
+  background: var(--gold); color: var(--ink) !important;
+  padding: 0.45rem 1.1rem; font-weight: 500;
+}
+.nav-links .cta:hover { background: var(--gold-lt); }
+.nav-burger { display: none; background: none; border: none; color: var(--muted); font-size: 1.4rem; cursor: pointer; padding: 0.5rem; }
+
+/* ── HERO ── */
+.hero {
+  min-height: 100vh; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center; padding: 8rem 2rem 5rem;
+  position: relative; overflow: hidden;
+}
+.hero-glow {
+  position: absolute; top: 30%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 800px; height: 500px;
+  background: radial-gradient(ellipse, rgba(184,150,62,0.055) 0%, transparent 65%);
+  pointer-events: none;
+}
+.hero-tag {
+  font-family: 'Fira Code', monospace; font-size: 0.68rem;
+  letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold);
+  border: 1px solid var(--border); padding: 0.38rem 1.1rem;
+  border-radius: 2px; margin-bottom: 2.2rem;
+  animation: fadeUp 0.7s ease both;
+}
+.hero h1 {
+  font-family: 'Fraunces', serif; font-size: clamp(3.2rem, 8vw, 7rem);
+  font-weight: 900; line-height: 0.96; letter-spacing: -0.03em;
+  max-width: 860px;
+  animation: fadeUp 0.7s 0.12s ease both;
+}
+.hero h1 em { font-style: italic; color: var(--gold); font-weight: 300; }
+.hero-sub {
+  margin-top: 1.8rem; font-size: 1rem; color: var(--muted);
+  max-width: 480px; line-height: 1.75;
+  animation: fadeUp 0.7s 0.24s ease both;
+}
+.hero-sub strong { color: var(--text); font-weight: 400; }
+.hero-btns {
+  margin-top: 2.8rem; display: flex; gap: 0.8rem; flex-wrap: wrap; justify-content: center;
+  animation: fadeUp 0.7s 0.36s ease both;
+}
+.btn { display: inline-flex; align-items: center; gap: 0.4rem; text-decoration: none; border: none; cursor: pointer; font-family: 'Fira Code', monospace; font-size: 0.76rem; letter-spacing: 0.1em; text-transform: uppercase; border-radius: var(--radius); transition: all 0.18s; white-space: nowrap; }
+.btn-gold { background: var(--gold); color: var(--ink); padding: 0.82rem 2rem; font-weight: 500; }
+.btn-gold:hover { background: var(--gold-lt); transform: translateY(-2px); }
+.btn-ghost { background: transparent; color: var(--text); padding: 0.82rem 2rem; border: 1px solid var(--border); }
+.btn-ghost:hover { border-color: var(--border-hi); transform: translateY(-2px); }
+.btn-sm { font-size: 0.68rem; padding: 0.5rem 1.1rem; }
+
+/* ── TRUST BAR ── */
+.trust-bar {
+  border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  background: var(--ink2); padding: 0.9rem 0;
+  animation: fadeUp 0.7s 0.48s ease both;
+}
+.trust-inner {
+  max-width: 1180px; margin: 0 auto; padding: 0 2rem;
+  display: flex; align-items: center; justify-content: center;
+  gap: 3rem; flex-wrap: wrap;
+}
+.trust-item { display: flex; align-items: center; gap: 0.6rem; }
+.trust-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); flex-shrink: 0; animation: pulse 2.4s infinite; }
+.trust-text { font-family: 'Fira Code', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 0.06em; }
+.trust-text strong { color: var(--text); font-weight: 400; }
+
+/* ── TICKER ── */
+.ticker { overflow: hidden; background: var(--ink3); border-bottom: 1px solid var(--border); padding: 0.65rem 0; position: relative; z-index: 1; }
+.ticker-track { display: flex; gap: 0; animation: scroll 36s linear infinite; width: max-content; }
+.ticker-item { display: flex; align-items: center; gap: 0.55rem; padding: 0 2.5rem; font-family: 'Fira Code', monospace; font-size: 0.68rem; letter-spacing: 0.04em; white-space: nowrap; border-right: 1px solid var(--border); }
+.ticker-name { color: var(--muted); }
+.ticker-price { color: var(--text); }
+.ticker-delta { font-size: 0.62rem; }
+.up { color: var(--green); }
+.dn { color: var(--red); }
+
+/* ── SECTION HEADERS ── */
+.sec-label { font-family: 'Fira Code', monospace; font-size: 0.64rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.7rem; }
+.sec-title { font-family: 'Fraunces', serif; font-size: clamp(2rem, 4.5vw, 3.4rem); font-weight: 700; letter-spacing: -0.025em; line-height: 1.1; margin-bottom: 1rem; }
+.sec-sub { font-size: 0.9rem; color: var(--muted); line-height: 1.7; max-width: 520px; }
+
+/* ── SEARCH SECTION ── */
+.search-section { padding: 5rem 0 3rem; }
+.search-box {
+  display: flex; border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden;
+  background: var(--surface); margin-bottom: 1.2rem;
+  transition: border-color 0.2s;
+}
+.search-box:focus-within { border-color: var(--gold); }
+.search-box input {
+  flex: 1; background: none; border: none; outline: none;
+  color: var(--text); font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem; font-weight: 300; padding: 1rem 1.4rem;
+}
+.search-box input::placeholder { color: var(--muted); }
+.search-box select {
+  background: var(--ink3); border: none; border-left: 1px solid var(--border);
+  color: var(--muted); font-family: 'Fira Code', monospace;
+  font-size: 0.7rem; padding: 0 1rem; outline: none; cursor: pointer;
+  letter-spacing: 0.04em;
+}
+.search-btn {
+  background: var(--gold); color: var(--ink); border: none; cursor: pointer;
+  font-family: 'Fira Code', monospace; font-size: 0.72rem;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 0 1.8rem; font-weight: 500; transition: background 0.18s;
+  white-space: nowrap;
+}
+.search-btn:hover { background: var(--gold-lt); }
+.filter-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+.chip {
+  font-family: 'Fira Code', monospace; font-size: 0.66rem;
+  letter-spacing: 0.07em; text-transform: uppercase;
+  padding: 0.3rem 0.85rem; border: 1px solid var(--border);
+  border-radius: 2px; color: var(--muted); cursor: pointer;
+  background: none; transition: all 0.15s;
+}
+.chip:hover, .chip.active { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
+.filter-sep { width: 1px; height: 18px; background: var(--border); }
+
+/* ── RESULTS ── */
+.results-section { padding: 0 0 5rem; position: relative; z-index: 1; }
+.results-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.2rem; padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.results-count { font-family: 'Fira Code', monospace; font-size: 0.72rem; color: var(--muted); }
+.sort-sel { background: var(--surface); border: 1px solid var(--border); color: var(--muted); font-family: 'Fira Code', monospace; font-size: 0.68rem; padding: 0.35rem 0.7rem; border-radius: var(--radius); outline: none; cursor: pointer; }
+
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.card-item { background: var(--surface); padding: 1.4rem 1.5rem; cursor: pointer; transition: background 0.18s; position: relative; }
+.card-item::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent 0%, var(--gold) 50%, transparent 100%); opacity: 0; transition: opacity 0.2s; }
+.card-item:hover { background: var(--ink3); }
+.card-item:hover::before { opacity: 1; }
+
+.card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.9rem; }
+.card-name { font-family: 'Fraunces', serif; font-size: 1.05rem; font-weight: 700; line-height: 1.25; }
+.card-set { font-family: 'Fira Code', monospace; font-size: 0.6rem; color: var(--muted); margin-top: 0.2rem; letter-spacing: 0.05em; }
+.rarity { font-family: 'Fira Code', monospace; font-size: 0.6rem; padding: 0.22rem 0.6rem; border-radius: 2px; border: 1px solid; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; margin-left: 0.8rem; flex-shrink: 0; }
+.r-rare   { border-color: var(--gold);  color: var(--gold); }
+.r-ultra  { border-color: #9B7FE0; color: #9B7FE0; }
+.r-common { border-color: var(--muted); color: var(--muted); }
+.r-secret { border-color: #C05AD0; color: #C05AD0; }
+
+/* SPREAD BOX — the key differentiator */
+.spread-box { background: var(--ink3); border-radius: 2px; padding: 0.9rem 1rem; margin-bottom: 0.9rem; }
+.spread-platforms { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-bottom: 0.7rem; }
+.spread-plat-name { font-family: 'Fira Code', monospace; font-size: 0.6rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.3rem; }
+.spread-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.15rem; }
+.spread-row-label { font-family: 'Fira Code', monospace; font-size: 0.58rem; color: var(--faint); }
+.spread-row-val { font-family: 'Fira Code', monospace; font-size: 0.78rem; color: var(--text); }
+.spread-highlight { color: var(--gold); font-size: 0.85rem !important; }
+.spread-divider { border: none; border-top: 1px solid var(--border); margin: 0.6rem 0; }
+.spread-summary { display: flex; align-items: center; justify-content: space-between; }
+.spread-label { font-family: 'Fira Code', monospace; font-size: 0.6rem; color: var(--muted); letter-spacing: 0.06em; }
+.spread-val-big { font-family: 'Fraunces', serif; font-size: 1.4rem; font-weight: 700; }
+.spread-trend { font-family: 'Fira Code', monospace; font-size: 0.62rem; }
+
+.card-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.9rem; }
+.platforms { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.plat-tag { font-family: 'Fira Code', monospace; font-size: 0.58rem; padding: 0.15rem 0.5rem; background: var(--ink3); border-radius: 2px; color: var(--muted); letter-spacing: 0.04em; }
+.last-update { font-family: 'Fira Code', monospace; font-size: 0.58rem; color: var(--faint); }
+
+.card-actions { display: flex; gap: 0.5rem; }
+.card-btn {
+  flex: 1; padding: 0.5rem 0.6rem; border-radius: var(--radius); border: 1px solid var(--border);
+  background: none; color: var(--muted); cursor: pointer;
+  font-family: 'Fira Code', monospace; font-size: 0.62rem; letter-spacing: 0.06em;
+  text-transform: uppercase; transition: all 0.15s; text-align: center;
+}
+.card-btn:hover { border-color: var(--border-hi); color: var(--text); }
+.card-btn-gold { background: var(--gold); border-color: var(--gold); color: var(--ink); font-weight: 500; }
+.card-btn-gold:hover { background: var(--gold-lt); }
+
+.no-results { padding: 3rem; text-align: center; }
+.no-results p { font-family: 'Fira Code', monospace; font-size: 0.8rem; color: var(--muted); }
+
+/* ── SPREAD EXPLAINER ── */
+.explainer { padding: 4rem 0; background: var(--ink2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); position: relative; z-index: 1; }
+.explainer-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 5rem; align-items: center; }
+.explainer-visual { position: relative; }
+.ex-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.4rem; }
+.ex-card-title { font-family: 'Fraunces', serif; font-size: 1.05rem; font-weight: 700; margin-bottom: 1rem; }
+.ex-row { display: flex; justify-content: space-between; align-items: baseline; padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
+.ex-row:last-child { border-bottom: none; }
+.ex-row-label { font-family: 'Fira Code', monospace; font-size: 0.68rem; color: var(--muted); }
+.ex-row-val { font-family: 'Fira Code', monospace; font-size: 0.9rem; font-weight: 500; }
+.ex-row-bad { color: var(--red); }
+.ex-row-good { color: var(--green); }
+.ex-badge { position: absolute; top: -12px; right: 1rem; background: var(--gold); color: var(--ink); font-family: 'Fira Code', monospace; font-size: 0.62rem; padding: 0.25rem 0.7rem; border-radius: 2px; font-weight: 500; letter-spacing: 0.08em; }
+.explainer-nums { display: flex; gap: 2rem; margin-top: 2rem; flex-wrap: wrap; }
+.ex-stat .num { font-family: 'Fraunces', serif; font-size: 2.8rem; font-weight: 900; color: var(--gold); line-height: 1; }
+.ex-stat .lbl { font-size: 0.78rem; color: var(--muted); margin-top: 0.3rem; }
+
+/* ── MONITOR SECTION ── */
+.monitor { padding: 5.5rem 0; position: relative; z-index: 1; }
+.monitor-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 4rem; align-items: center; margin-top: 3rem; }
+.platform-list { display: flex; flex-direction: column; gap: 0.9rem; }
+.plat-row {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1rem 1.3rem;
+  transition: border-color 0.2s;
+}
+.plat-row:hover { border-color: var(--border-hi); }
+.plat-left { display: flex; align-items: center; gap: 1rem; }
+.plat-ico { width: 34px; height: 34px; border-radius: 2px; display: flex; align-items: center; justify-content: center; font-family: 'Fira Code', monospace; font-size: 0.6rem; font-weight: 500; }
+.ico-e { background: rgba(79,143,192,0.12); color: var(--blue); border: 1px solid rgba(79,143,192,0.25); }
+.ico-c { background: rgba(82,168,120,0.12); color: var(--green); border: 1px solid rgba(82,168,120,0.25); }
+.ico-t { background: rgba(184,150,62,0.1); color: var(--gold); border: 1px solid var(--border); }
+.plat-name { font-family: 'Fira Code', monospace; font-size: 0.8rem; font-weight: 500; }
+.plat-desc { font-size: 0.72rem; color: var(--muted); margin-top: 0.12rem; }
+.plat-status { display: flex; align-items: center; gap: 0.45rem; font-family: 'Fira Code', monospace; font-size: 0.62rem; color: var(--green); letter-spacing: 0.08em; text-transform: uppercase; }
+.status-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+
+.monitor-right .big { font-family: 'Fraunces', serif; font-size: 5rem; font-weight: 900; color: var(--gold); line-height: 1; margin-bottom: 0.3rem; }
+.monitor-right .big-lbl { font-size: 0.82rem; color: var(--muted); margin-bottom: 2rem; }
+.mini-stats { display: flex; gap: 2.5rem; flex-wrap: wrap; }
+.mini-stat .n { font-family: 'Fira Code', monospace; font-size: 1.6rem; font-weight: 500; }
+.mini-stat .l { font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem; }
+
+/* ── SERVICES ── */
+.services { padding: 5.5rem 0; position: relative; z-index: 1; }
+.services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-top: 3rem; }
+.svc {
+  background: var(--surface); padding: 2rem;
+  transition: background 0.18s; position: relative;
+}
+.svc:hover { background: var(--ink3); }
+.svc.featured { background: var(--ink2); }
+.svc-num { font-family: 'Fira Code', monospace; font-size: 0.6rem; color: var(--gold); letter-spacing: 0.2em; margin-bottom: 1.2rem; }
+.svc-icon { font-size: 1.8rem; margin-bottom: 0.9rem; }
+.svc-name { font-family: 'Fraunces', serif; font-size: 1.35rem; font-weight: 700; margin-bottom: 0.7rem; line-height: 1.2; }
+.svc-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.7; margin-bottom: 1.4rem; }
+.svc-price { font-family: 'Fraunces', serif; font-size: 2rem; font-weight: 900; color: var(--gold); line-height: 1; }
+.svc-price-note { font-family: 'Fira Code', monospace; font-size: 0.62rem; color: var(--muted); margin-bottom: 1.3rem; margin-top: 0.25rem; }
+.svc-features { list-style: none; margin-bottom: 1.6rem; }
+.svc-features li { font-family: 'Fira Code', monospace; font-size: 0.68rem; color: var(--muted); padding: 0.3rem 0 0.3rem 1.1rem; position: relative; letter-spacing: 0.02em; }
+.svc-features li::before { content: '→'; position: absolute; left: 0; color: var(--gold); font-size: 0.65rem; }
+.featured-tag { position: absolute; top: 1.2rem; right: 1.2rem; font-family: 'Fira Code', monospace; font-size: 0.58rem; letter-spacing: 0.1em; color: var(--gold); border: 1px solid var(--border); padding: 0.18rem 0.55rem; border-radius: 2px; }
+
+/* ── ALERTS ── */
+.alerts-section { padding: 5.5rem 0; background: var(--ink2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); position: relative; z-index: 1; }
+.alert-form { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2.2rem; margin-top: 2.5rem; max-width: 760px; }
+.form-row { display: flex; gap: 1rem; margin-bottom: 1rem; }
+.form-group { flex: 1; display: flex; flex-direction: column; gap: 0.45rem; }
+.form-label { font-family: 'Fira Code', monospace; font-size: 0.64rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.form-input {
+  background: var(--ink3); border: 1px solid var(--border);
+  border-radius: var(--radius); color: var(--text);
+  font-family: 'DM Sans', sans-serif; font-size: 0.88rem;
+  padding: 0.72rem 0.95rem; outline: none;
+  transition: border-color 0.18s; font-weight: 300;
+}
+.form-input:focus { border-color: var(--gold); }
+.form-input::placeholder { color: var(--muted); }
+.thresh-btns { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.4rem; }
+.thresh-btn { padding: 0.5rem; border: 1px solid var(--border); background: none; border-radius: var(--radius); font-family: 'Fira Code', monospace; font-size: 0.68rem; color: var(--muted); cursor: pointer; transition: all 0.15s; }
+.thresh-btn:hover, .thresh-btn.active { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
+.form-note { font-family: 'Fira Code', monospace; font-size: 0.64rem; color: var(--muted); margin-top: 0.7rem; letter-spacing: 0.03em; }
+.form-note span { color: var(--gold); }
+
+/* ── SEO CONTENT ── */
+.why-section { padding: 5.5rem 0; position: relative; z-index: 1; }
+.why-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-top: 3rem; }
+.why-item { background: var(--surface); padding: 1.8rem; }
+.why-num { font-family: 'Fira Code', monospace; font-size: 0.6rem; color: var(--gold); letter-spacing: 0.2em; margin-bottom: 0.8rem; }
+.why-title { font-family: 'Fraunces', serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 0.6rem; }
+.why-text { font-size: 0.82rem; color: var(--muted); line-height: 1.7; }
+
+/* ── TESTIMONIALS ── */
+.testi-section { padding: 5.5rem 0; background: var(--ink2); border-top: 1px solid var(--border); position: relative; z-index: 1; }
+.testi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-top: 2.5rem; }
+.testi { background: var(--surface); padding: 1.8rem; }
+.testi-text { font-size: 0.88rem; color: var(--muted); line-height: 1.75; margin-bottom: 1.2rem; font-style: italic; }
+.testi-text strong { color: var(--text); font-style: normal; }
+.testi-author { display: flex; align-items: center; gap: 0.7rem; }
+.testi-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--ink3); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; border: 1px solid var(--border); }
+.testi-name { font-family: 'Fira Code', monospace; font-size: 0.68rem; color: var(--text); }
+.testi-role { font-family: 'Fira Code', monospace; font-size: 0.6rem; color: var(--muted); }
+
+/* ── FOOTER ── */
+footer { border-top: 1px solid var(--border); padding: 3rem 0; position: relative; z-index: 1; }
+.footer-inner { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 2rem; }
+.footer-brand .logo { font-size: 1.15rem; }
+.footer-tagline { font-size: 0.78rem; color: var(--muted); margin-top: 0.4rem; max-width: 220px; line-height: 1.6; }
+.footer-links h4 { font-family: 'Fira Code', monospace; font-size: 0.64rem; color: var(--gold); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.9rem; }
+.footer-links ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+.footer-links a { font-size: 0.8rem; color: var(--muted); text-decoration: none; transition: color 0.15s; }
+.footer-links a:hover { color: var(--text); }
+.footer-bottom { margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+.footer-copy { font-family: 'Fira Code', monospace; font-size: 0.64rem; color: var(--muted); letter-spacing: 0.04em; }
+
+/* ── MODAL ── */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,0.75); backdrop-filter: blur(10px);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.22s;
+  padding: 1rem;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 2.2rem;
+  max-width: 540px; width: 100%; position: relative;
+  transform: translateY(16px); transition: transform 0.22s;
+  max-height: 90vh; overflow-y: auto;
+}
+.modal-overlay.open .modal { transform: translateY(0); }
+.modal-close { position: absolute; top: 1.2rem; right: 1.2rem; background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1.1rem; padding: 0.3rem; transition: color 0.15s; }
+.modal-close:hover { color: var(--text); }
+.modal-title { font-family: 'Fraunces', serif; font-size: 1.7rem; font-weight: 700; margin-bottom: 0.4rem; line-height: 1.2; }
+.modal-sub { font-size: 0.8rem; color: var(--muted); margin-bottom: 1.8rem; line-height: 1.6; }
+.modal-platforms { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; margin-bottom: 1.5rem; }
+.modal-plat { background: var(--ink3); border-radius: 2px; padding: 0.9rem; }
+.modal-plat-name { font-family: 'Fira Code', monospace; font-size: 0.6rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.5rem; }
+.modal-plat-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.15rem; }
+.modal-plat-label { font-size: 0.7rem; color: var(--muted); }
+.modal-plat-val { font-family: 'Fira Code', monospace; font-size: 0.8rem; }
+.modal-plat-spread { font-family: 'Fira Code', monospace; font-size: 0.65rem; margin-top: 0.4rem; padding-top: 0.4rem; border-top: 1px solid var(--border); }
+.modal-actions { display: flex; gap: 0.6rem; margin-top: 0.2rem; }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+@keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+.reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.55s ease, transform 0.55s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .nav-links { display: none; }
+  .nav-burger { display: block; }
+  .nav-links.mob-open { display: flex; flex-direction: column; position: fixed; top: 58px; left: 0; right: 0; background: var(--ink); border-bottom: 1px solid var(--border); padding: 1rem 2rem 1.5rem; z-index: 199; gap: 0.3rem; }
+  .explainer-grid, .monitor-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+  .services-grid { grid-template-columns: 1fr; }
+  .testi-grid { grid-template-columns: 1fr; }
+  .form-row { flex-direction: column; }
+  .footer-inner { flex-direction: column; }
+  .modal-platforms { grid-template-columns: 1fr; }
+  .thresh-btns { grid-template-columns: repeat(2,1fr); }
+}
+@media (max-width: 600px) {
+  .hero h1 { font-size: 2.8rem; }
+  .monitor-right .big { font-size: 3.5rem; }
+  .cards-grid { grid-template-columns: 1fr; }
+  .trust-inner { gap: 1.5rem; }
+  .hero-btns { flex-direction: column; align-items: center; }
+  .why-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="logo">Card<em>Vault</em></a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#prezzi">Prezzi</a></li>
+      <li><a href="#monitor">Monitor</a></li>
+      <li><a href="#servizi">Servizi</a></li>
+      <li><a href="#alert">Alert</a></li>
+      <li><a href="#perche">Perché noi</a></li>
+      <li><a href="#servizi" class="cta">Valutazione →</a></li>
+    </ul>
+    <button class="nav-burger" id="burger" aria-label="Menu">☰</button>
+  </div>
+</nav>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <p class="hero-tag">↑ &nbsp;Prezzi venduti reali — non listing gonfiati</p>
+  <h1 class="serif">Il prezzo<br><em>vero</em> di ogni<br>carta.</h1>
+  <p class="hero-sub">Confrontiamo <strong>prezzi venduti</strong> e in vendita su eBay & Cardmarket ogni 15 minuti. Spread, trend, alert e valutazione professionale — tutto in un posto.</p>
+  <div class="hero-btns">
+    <a href="#prezzi" class="btn btn-gold">Cerca una carta &nbsp;↓</a>
+    <a href="#servizi" class="btn btn-ghost">Valutazione professionale</a>
+  </div>
+</section>
+
+<!-- ── TRUST ── -->
+<div class="trust-bar">
+  <div class="trust-inner">
+    <div class="trust-item"><div class="trust-dot"></div><span class="trust-text mono"><strong>47.200</strong> carte monitorate</span></div>
+    <div class="trust-item"><div class="trust-dot"></div><span class="trust-text mono">Aggiornamento ogni <strong>15 min</strong></span></div>
+    <div class="trust-item"><div class="trust-dot"></div><span class="trust-text mono"><strong>3</strong> piattaforme · eBay · Cardmarket · TCGPlayer</span></div>
+    <div class="trust-item"><div class="trust-dot"></div><span class="trust-text mono">Spread <strong>venduti vs listing</strong> in tempo reale</span></div>
+  </div>
+</div>
+
+<!-- ── TICKER ── -->
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-track" id="ticker"></div>
+</div>
+
+<!-- ── SEARCH ── -->
+<section class="search-section" id="prezzi">
+  <div class="container">
+    <p class="sec-label reveal">// 01 — Ricerca Prezzi</p>
+    <h2 class="sec-title serif reveal">Quanto vale <em>davvero</em><br>la tua carta?</h2>
+    <p class="sec-sub reveal" style="margin-bottom:2rem;">Vedi lo spread reale: quanto chiedono i venditori vs quanto hanno pagato gli acquirenti negli ultimi 90 giorni.</p>
+    <div class="search-box reveal">
+      <input type="text" id="searchInput" placeholder="Cerca carta (es. Charizard, Black Lotus, Blue-Eyes…)" autocomplete="off">
+      <select id="gameSelect">
+        <option value="all">Tutti i giochi</option>
+        <option value="pokemon">Pokémon</option>
+        <option value="magic">Magic: TG</option>
+        <option value="yugioh">Yu-Gi-Oh!</option>
+        <option value="onepiece">One Piece</option>
+      </select>
+      <button class="search-btn" onclick="runSearch()">Cerca →</button>
+    </div>
+    <div class="filter-row reveal">
+      <button class="chip active" data-filter="all" onclick="setFilter(this,'all')">Tutte</button>
+      <button class="chip" data-filter="nm"   onclick="setFilter(this,'nm')">Near Mint</button>
+      <button class="chip" data-filter="ex"   onclick="setFilter(this,'ex')">Excellent</button>
+      <button class="chip" data-filter="lp"   onclick="setFilter(this,'lp')">Lightly Played</button>
+      <div class="filter-sep"></div>
+      <button class="chip" data-filter="1st"  onclick="setFilter(this,'1st')">1st Edition</button>
+      <button class="chip" data-filter="holo" onclick="setFilter(this,'holo')">Holo</button>
+      <button class="chip" data-filter="psa"  onclick="setFilter(this,'psa')">PSA Graded</button>
+    </div>
+  </div>
+</section>
+
+<!-- ── RESULTS ── -->
+<section class="results-section" id="results">
+  <div class="container">
+    <div class="results-bar">
+      <span class="results-count mono" id="resultsCount">// 6 risultati</span>
+      <select class="sort-sel" id="sortSel" onchange="sortCards()">
+        <option value="spread-desc">Spread: maggiore</option>
+        <option value="price-desc">Prezzo: alto → basso</option>
+        <option value="price-asc">Prezzo: basso → alto</option>
+        <option value="trend-desc">Trend: crescente</option>
+      </select>
+    </div>
+    <div class="cards-grid" id="cardsGrid"></div>
+  </div>
+</section>
+
+<!-- ── SPREAD EXPLAINER ── -->
+<section class="explainer" id="spread">
+  <div class="container">
+    <div class="explainer-grid">
+      <div>
+        <p class="sec-label reveal">// Il dato che cambia tutto</p>
+        <h2 class="sec-title serif reveal">Listing price<br>≠ <em>prezzo reale</em></h2>
+        <p class="sec-sub reveal" style="margin-bottom:1.5rem;">Il 73% dei collezionisti italiani valuta le proprie carte guardando solo i listing su Cardmarket — cioè quanto i venditori <em>sperano</em> di ricevere. CardVault mostra invece quanto gli acquirenti <em>hanno davvero pagato</em>.</p>
+        <div class="explainer-nums reveal">
+          <div class="ex-stat">
+            <div class="num">+28%</div>
+            <div class="lbl">spread medio listing vs sold<br>sulle carte vintage</div>
+          </div>
+          <div class="ex-stat">
+            <div class="num">90gg</div>
+            <div class="lbl">di storico venduti<br>analizzato</div>
+          </div>
+        </div>
+      </div>
+      <div class="explainer-visual reveal">
+        <div class="ex-badge">Esempio reale — Charizard Base Set</div>
+        <div class="ex-card">
+          <div class="ex-card-title">Charizard Holo — Base Set 4/102</div>
+          <div class="ex-row">
+            <span class="ex-row-label">In vendita su eBay (listing)</span>
+            <span class="ex-row-val ex-row-bad">€ 2.650</span>
+          </div>
+          <div class="ex-row">
+            <span class="ex-row-label">Ultimo venduto eBay (90gg)</span>
+            <span class="ex-row-val ex-row-good">€ 1.840</span>
+          </div>
+          <div class="ex-row">
+            <span class="ex-row-label">In vendita Cardmarket</span>
+            <span class="ex-row-val ex-row-bad">€ 1.920</span>
+          </div>
+          <div class="ex-row">
+            <span class="ex-row-label">Venduti recenti Cardmarket</span>
+            <span class="ex-row-val ex-row-good">€ 1.720</span>
+          </div>
+          <div class="ex-row" style="background:rgba(184,150,62,0.06);border-radius:2px;padding:0.5rem;margin-top:0.4rem;border-bottom:none;">
+            <span class="ex-row-label">→ Prezzo reale medio di mercato</span>
+            <span class="ex-row-val" style="color:var(--gold);font-size:1.05rem;">€ 1.780</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── MONITOR ── -->
+<section class="monitor" id="monitor">
+  <div class="container">
+    <p class="sec-label reveal">// 02 — Monitoraggio Live</p>
+    <h2 class="sec-title serif reveal">Tracciamo ogni<br>variazione di prezzo</h2>
+    <div class="monitor-grid">
+      <div class="platform-list reveal">
+        <div class="plat-row">
+          <div class="plat-left">
+            <div class="plat-ico ico-e">eBay</div>
+            <div>
+              <div class="plat-name">eBay</div>
+              <div class="plat-desc">Aste & BIN — Venduti ultimi 90gg — Italia + EU</div>
+            </div>
+          </div>
+          <div class="plat-status"><div class="status-dot"></div>Live</div>
+        </div>
+        <div class="plat-row">
+          <div class="plat-left">
+            <div class="plat-ico ico-c">CM</div>
+            <div>
+              <div class="plat-name">Cardmarket</div>
+              <div class="plat-desc">Il mercato europeo — prezzi in EUR — 30 paesi</div>
+            </div>
+          </div>
+          <div class="plat-status"><div class="status-dot"></div>Live</div>
+        </div>
+        <div class="plat-row">
+          <div class="plat-left">
+            <div class="plat-ico ico-t">TCG</div>
+            <div>
+              <div class="plat-name">TCGPlayer</div>
+              <div class="plat-desc">Mercato americano — USD + conversione EUR</div>
+            </div>
+          </div>
+          <div class="plat-status"><div class="status-dot"></div>Live</div>
+        </div>
+      </div>
+      <div class="monitor-right reveal">
+        <div class="big">47K+</div>
+        <div class="big-lbl">carte monitorate in tempo reale</div>
+        <div class="mini-stats">
+          <div class="mini-stat"><div class="n mono">3</div><div class="l">piattaforme</div></div>
+          <div class="mini-stat"><div class="n mono">15'</div><div class="l">aggiornamento</div></div>
+          <div class="mini-stat"><div class="n mono">90gg</div><div class="l">storico venduti</div></div>
+          <div class="mini-stat"><div class="n mono">6+</div><div class="l">giochi TCG</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SERVICES ── -->
+<section class="services" id="servizi">
+  <div class="container">
+    <p class="sec-label reveal">// 03 — Servizi Professionali</p>
+    <h2 class="sec-title serif reveal">Valutazione &amp;<br>Autenticazione</h2>
+    <p class="sec-sub reveal">Servizi umani, non algoritmici. Ogni carta analizzata da un esperto certificato.</p>
+    <div class="services-grid">
+
+      <div class="svc reveal">
+        <div class="svc-num">001</div>
+        <div class="svc-icon">📊</div>
+        <div class="svc-name">Valutazione di Mercato</div>
+        <p class="svc-desc">Report completo con prezzo reale basato su venduti degli ultimi 90 giorni. Finalmente sai quanto vale davvero la tua carta, non quanto la mette in vendita il venditore vicino.</p>
+        <div class="svc-price">€ 4.90</div>
+        <div class="svc-price-note">per carta &nbsp;·&nbsp; report PDF in 24h</div>
+        <ul class="svc-features">
+          <li>Analisi spread su 3 piattaforme</li>
+          <li>Valore per condizione (NM / EX / GD)</li>
+          <li>Storico prezzi 90 giorni</li>
+          <li>Report PDF scaricabile</li>
+          <li>Rimborso se non soddisfatto</li>
+        </ul>
+        <button class="btn btn-gold" style="width:100%;justify-content:center;" onclick="openModal('valutazione')">Richiedi valutazione →</button>
+      </div>
+
+      <div class="svc featured reveal">
+        <div class="featured-tag">★ Più richiesto</div>
+        <div class="svc-num">002</div>
+        <div class="svc-icon">🔍</div>
+        <div class="svc-name">Valutazione + Autenticazione</div>
+        <p class="svc-desc">Verifichiamo l'autenticità analizzando le tue foto ad alta risoluzione. Controllo bordi, testo, texture olografica e colori. Ideale prima di ogni acquisto importante.</p>
+        <div class="svc-price">€ 14.90</div>
+        <div class="svc-price-note">per carta &nbsp;·&nbsp; certificato in 48h</div>
+        <ul class="svc-features">
+          <li>Tutto del piano Valutazione</li>
+          <li>Verifica autenticità foto HD</li>
+          <li>Analisi bordi, testo, ologramma</li>
+          <li>Certificato digitale CardVault</li>
+          <li>Rimborso integrale se falsa</li>
+          <li>Segnalazione venditore fraudolento</li>
+        </ul>
+        <button class="btn btn-gold" style="width:100%;justify-content:center;" onclick="openModal('auth')">Richiedi autenticazione →</button>
+      </div>
+
+      <div class="svc reveal">
+        <div class="svc-num">003</div>
+        <div class="svc-icon">🔔</div>
+        <div class="svc-name">Alert Variazioni</div>
+        <p class="svc-desc">Ricevi notifica su Telegram o email nel momento esatto in cui il prezzo di una carta supera o scende sotto la tua soglia. Non perdere mai il momento giusto per vendere o comprare.</p>
+        <div class="svc-price">€ 2.90</div>
+        <div class="svc-price-note">al mese &nbsp;·&nbsp; carte illimitate</div>
+        <ul class="svc-features">
+          <li>Alert Telegram e/o email</li>
+          <li>Soglie personalizzate +/− %</li>
+          <li>Carte illimitate in monitoring</li>
+          <li>Storico variazioni 12 mesi</li>
+          <li>3 alert gratuiti per iniziare</li>
+        </ul>
+        <button class="btn btn-ghost" style="width:100%;justify-content:center;" onclick="openModal('alert')">Attiva alert gratuiti →</button>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── ALERT FORM ── -->
+<section class="alerts-section" id="alert">
+  <div class="container">
+    <p class="sec-label reveal">// 04 — Alert di Prezzo</p>
+    <h2 class="sec-title serif reveal">Non perdere il<br>momento <em>giusto</em></h2>
+    <p class="sec-sub reveal">Imposta una soglia e ti avvisiamo noi. Tre alert gratuiti, poi illimitati con il piano mensile.</p>
+    <div class="alert-form reveal">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Nome carta da monitorare</label>
+          <input type="text" class="form-input" placeholder="es. Charizard Base Set Holo 1st Edition">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Piattaforma</label>
+          <select class="form-input">
+            <option>Tutte le piattaforme</option>
+            <option>eBay</option>
+            <option>Cardmarket</option>
+            <option>TCGPlayer</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Email o Telegram username</label>
+          <input type="text" class="form-input" placeholder="@username oppure email@esempio.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Soglia variazione</label>
+          <div class="thresh-btns" id="threshBtns">
+            <button class="thresh-btn" onclick="setThresh(this)">± 5%</button>
+            <button class="thresh-btn active" onclick="setThresh(this)">± 10%</button>
+            <button class="thresh-btn" onclick="setThresh(this)">± 20%</button>
+            <button class="thresh-btn" onclick="setThresh(this)">± 30%</button>
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-gold" style="margin-top:0.5rem" onclick="submitAlert(this)">Attiva alert gratuito →</button>
+      <p class="form-note">→ Hai diritto a <span>3 alert gratuiti</span>. Illimitati con piano da <span>€ 2.90/mese</span>. Nessuna carta di credito richiesta per gli alert gratuiti.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── WHY ── -->
+<section class="why-section" id="perche">
+  <div class="container">
+    <p class="sec-label reveal">// 05 — Perché CardVault</p>
+    <h2 class="sec-title serif reveal">Quello che gli altri<br>non ti <em>dicono</em></h2>
+    <div class="why-grid">
+      <div class="why-item reveal">
+        <div class="why-num">001</div>
+        <div class="why-title">Prezzi venduti, non listing</div>
+        <p class="why-text">Cardmarket e eBay mostrano quello che i venditori chiedono. Noi mostriamo quello che gli acquirenti hanno effettivamente pagato. La differenza media è del 28%.</p>
+      </div>
+      <div class="why-item reveal">
+        <div class="why-num">002</div>
+        <div class="why-title">Falsi in crescita</div>
+        <p class="why-text">Le carte Charizard vintage e le Alt Art moderne sono le più contraffatte. Senza analisi professionale, nessuno strumento automatico ti garantisce l'autenticità.</p>
+      </div>
+      <div class="why-item reveal">
+        <div class="why-num">003</div>
+        <div class="why-title">Multi-gioco, tutto in italiano</div>
+        <p class="why-text">Pokémon, Magic, Yu-Gi-Oh!, One Piece, Disney Lorcana — un'unica interfaccia, prezzi in EUR, supporto in italiano. Nessun altro sito europeo offre questo mix.</p>
+      </div>
+      <div class="why-item reveal">
+        <div class="why-num">004</div>
+        <div class="why-title">Mercato da $7 miliardi</div>
+        <p class="why-text">Il collezionismo TCG varrà $10.5 miliardi entro il 2029. 1 italiano su 7 acquista carte abitualmente, con spesa media di €344/anno. Il momento per iniziare è ora.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── TESTIMONIALS ── -->
+<section class="testi-section">
+  <div class="container">
+    <p class="sec-label reveal">// Dicono di noi</p>
+    <h2 class="sec-title serif reveal">Chi ha già usato<br><em>CardVault</em></h2>
+    <div class="testi-grid">
+      <div class="testi reveal">
+        <p class="testi-text">"Stavo per vendere il mio Charizard a €1.500 perché quello era il prezzo su Cardmarket. CardVault mi ha mostrato che <strong>i venduti reali erano a €2.100</strong>. Report pagato €4.90, guadagnato €600."</p>
+        <div class="testi-author"><div class="testi-avatar">🎴</div><div><div class="testi-name">Marco R.</div><div class="testi-role">Collezionista Pokémon · Milano</div></div></div>
+      </div>
+      <div class="testi reveal">
+        <p class="testi-text">"Avevo quasi comprato un Pikachu Illustrator a €4.000 da eBay. Autenticazione CardVault in 48h: <strong>era un falso di alta qualità</strong>. Mi hanno salvato un disastro finanziario."</p>
+        <div class="testi-author"><div class="testi-avatar">🔍</div><div><div class="testi-name">Luca M.</div><div class="testi-role">Trader · Roma</div></div></div>
+      </div>
+      <div class="testi reveal">
+        <p class="testi-text">"Gli alert Telegram sono una svolta. Ho comprato <strong>tre Black Lotus durante un calo del 18%</strong> che altrimenti mi sarei perso. Il piano da €2.90 si è ripagato in 10 minuti."</p>
+        <div class="testi-author"><div class="testi-avatar">⚡</div><div><div class="testi-name">Alex P.</div><div class="testi-role">Speculatore Magic · Torino</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <a href="#" class="logo">Card<em>Vault</em></a>
+        <p class="footer-tagline">Prezzi reali, spread venduti/listing, valutazione professionale. Il riferimento italiano per i collezionisti di carte.</p>
+      </div>
+      <div class="footer-links">
+        <h4>Strumenti</h4>
+        <ul>
+          <li><a href="#prezzi">Ricerca prezzi</a></li>
+          <li><a href="#monitor">Monitor live</a></li>
+          <li><a href="#alert">Alert variazioni</a></li>
+          <li><a href="#servizi">Valutazione</a></li>
+        </ul>
+      </div>
+      <div class="footer-links">
+        <h4>Giochi</h4>
+        <ul>
+          <li><a href="#">Pokémon</a></li>
+          <li><a href="#">Magic: The Gathering</a></li>
+          <li><a href="#">Yu-Gi-Oh!</a></li>
+          <li><a href="#">One Piece TCG</a></li>
+        </ul>
+      </div>
+      <div class="footer-links">
+        <h4>Info</h4>
+        <ul>
+          <li><a href="#">Blog prezzi</a></li>
+          <li><a href="#">Come funziona</a></li>
+          <li><a href="#">Privacy</a></li>
+          <li><a href="#">Contatti</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy mono">© 2025 CardVault · Tutti i diritti riservati</span>
+      <span class="footer-copy mono">Prezzi aggiornati ogni 15 minuti da eBay · Cardmarket · TCGPlayer</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ── MODAL ── -->
+<div class="modal-overlay" id="modal" onclick="closeModalBg(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<!-- ── DATA & LOGIC ── -->
+<script>
+// ── CARD DATABASE ──
+const DB = [
+  {
+    id:1, name:"Charizard Holo", set:"Base Set · 1999 · #4/102", rarity:"rare", rl:"Rare Holo",
+    game:"pokemon", tags:["holo"],
+    ebay:{ on:2650, sold:1840 }, cm:{ on:1920, sold:1720 },
+    spread: 30, trend:8.2, trendDir:"up",
+    mid:1780, low:1720, high:2650,
+    updated:"8 min fa"
+  },
+  {
+    id:2, name:"Black Lotus", set:"Alpha · 1993", rarity:"ultra", rl:"Power 9",
+    game:"magic", tags:[],
+    ebay:{ on:9500, sold:7800 }, cm:{ on:null, sold:null },
+    spread:22, trend:2.4, trendDir:"up",
+    mid:7800, low:7200, high:9500,
+    updated:"12 min fa"
+  },
+  {
+    id:3, name:"Pikachu Illustrator", set:"Promo CoroCoro · 1997", rarity:"ultra", rl:"Trophy Promo",
+    game:"pokemon", tags:[],
+    ebay:{ on:250000, sold:195000 }, cm:{ on:null, sold:null },
+    spread:28, trend:-3.1, trendDir:"down",
+    mid:195000, low:180000, high:250000,
+    updated:"5 min fa"
+  },
+  {
+    id:4, name:"Blue-Eyes White Dragon", set:"LOB-001 · 1st Edition · 2002", rarity:"rare", rl:"Ultra Rare",
+    game:"yugioh", tags:["1st"],
+    ebay:{ on:950, sold:820 }, cm:{ on:780, sold:740 },
+    spread:19, trend:5.3, trendDir:"up",
+    mid:780, low:740, high:950,
+    updated:"3 min fa"
+  },
+  {
+    id:5, name:"Ancestral Recall", set:"Beta · 1993", rarity:"ultra", rl:"Power 9",
+    game:"magic", tags:[],
+    ebay:{ on:4200, sold:3400 }, cm:{ on:null, sold:null },
+    spread:24, trend:-1.8, trendDir:"down",
+    mid:3400, low:3200, high:4200,
+    updated:"9 min fa"
+  },
+  {
+    id:6, name:"Mew Trophy Card", set:"Battle Road Spring · 1997", rarity:"ultra", rl:"Trophy Card",
+    game:"pokemon", tags:[],
+    ebay:{ on:17000, sold:14200 }, cm:{ on:null, sold:null },
+    spread:20, trend:14.7, trendDir:"up",
+    mid:14200, low:13800, high:17000,
+    updated:"6 min fa"
+  },
+  {
+    id:7, name:"Monkey D. Luffy Alt Art", set:"OP-01 · Romance Dawn · 2022", rarity:"secret", rl:"Secret Rare",
+    game:"onepiece", tags:["holo"],
+    ebay:{ on:380, sold:290 }, cm:{ on:310, sold:270 },
+    spread:32, trend:22.1, trendDir:"up",
+    mid:280, low:260, high:380,
+    updated:"2 min fa"
+  },
+  {
+    id:8, name:"Charizard ex Full Art", set:"Obsidian Flames · 2023 · #228/197", rarity:"secret", rl:"Special Illustration",
+    game:"pokemon", tags:["holo"],
+    ebay:{ on:185, sold:130 }, cm:{ on:140, sold:118 },
+    spread:43, trend:11.4, trendDir:"up",
+    mid:124, low:118, high:185,
+    updated:"4 min fa"
+  }
+];
+
+let activeFilter = "all";
+let currentCards = [...DB];
+
+function fmt(n) { if (!n && n!==0) return "—"; return "€ " + n.toLocaleString('it-IT'); }
+function fmtShort(n) { if (!n && n!==0) return "—"; if (n>=1000) return "€" + (n/1000).toFixed(n>=10000?0:1) + "K"; return "€" + n; }
+
+function calcSpread(listing, sold) {
+  if (!listing || !sold) return null;
+  return Math.round((listing - sold) / sold * 100);
+}
+
+function renderCards(cards) {
+  const grid = document.getElementById('cardsGrid');
+  document.getElementById('resultsCount').textContent = `// ${cards.length} result${cards.length!==1?'i':'o'} trovat${cards.length!==1?'i':'o'}`;
+  if (!cards.length) {
+    grid.innerHTML = '<div class="no-results" style="grid-column:1/-1"><p>Nessuna carta trovata. Prova con un altro nome o gioco.</p></div>';
+    return;
+  }
+  grid.innerHTML = cards.map(c => {
+    const ebaySpread = calcSpread(c.ebay.on, c.ebay.sold);
+    const cmSpread   = calcSpread(c.cm.on,   c.cm.sold);
+    const trendClass = c.trendDir === 'up' ? 'up' : 'dn';
+    const trendArrow = c.trendDir === 'up' ? '↑' : '↓';
+    return `
+    <div class="card-item" onclick="openCardModal(${c.id})">
+      <div class="card-top">
+        <div>
+          <div class="card-name">${c.name}</div>
+          <div class="card-set mono">${c.set}</div>
+        </div>
+        <span class="rarity r-${c.rarity}">${c.rl}</span>
+      </div>
+      <div class="spread-box">
+        <div class="spread-platforms">
+          <div>
+            <div class="spread-plat-name">eBay</div>
+            <div class="spread-row"><span class="spread-row-label">In vendita</span><span class="spread-row-val mono" style="color:var(--red)">${fmt(c.ebay.on)}</span></div>
+            <div class="spread-row"><span class="spread-row-label">Venduti 90gg</span><span class="spread-row-val mono" style="color:var(--green)">${fmt(c.ebay.sold)}</span></div>
+            ${ebaySpread!==null ? `<div style="margin-top:4px;font-family:'Fira Code',monospace;font-size:0.58rem;color:var(--gold)">spread +${ebaySpread}%</div>` : ''}
+          </div>
+          <div>
+            <div class="spread-plat-name">Cardmarket</div>
+            <div class="spread-row"><span class="spread-row-label">In vendita</span><span class="spread-row-val mono" style="color:${c.cm.on?'var(--red)':'var(--faint)'}">${fmt(c.cm.on)}</span></div>
+            <div class="spread-row"><span class="spread-row-label">Venduti recenti</span><span class="spread-row-val mono" style="color:${c.cm.sold?'var(--green)':'var(--faint)'}">${fmt(c.cm.sold)}</span></div>
+            ${cmSpread!==null ? `<div style="margin-top:4px;font-family:'Fira Code',monospace;font-size:0.58rem;color:var(--gold)">spread +${cmSpread}%</div>` : ''}
+          </div>
+        </div>
+        <hr class="spread-divider">
+        <div class="spread-summary">
+          <div><div class="spread-label">Prezzo reale di mercato</div></div>
+          <div style="text-align:right">
+            <div class="spread-val-big" style="color:var(--gold)">${fmt(c.mid)}</div>
+            <div class="spread-trend mono ${trendClass}">${trendArrow} ${Math.abs(c.trend)}% &nbsp;·&nbsp; 30gg</div>
+          </div>
+        </div>
+      </div>
+      <div class="card-meta">
+        <div class="platforms">
+          ${c.ebay.on ? '<span class="plat-tag">eBay</span>' : ''}
+          ${c.cm.on   ? '<span class="plat-tag">Cardmarket</span>' : ''}
+          <span class="plat-tag">TCGPlayer</span>
+        </div>
+        <span class="last-update mono">aggiornato ${c.updated}</span>
+      </div>
+      <div class="card-actions">
+        <button class="card-btn" onclick="event.stopPropagation();openCardModal(${c.id})">Dettaglio spread</button>
+        <button class="card-btn card-btn-gold" onclick="event.stopPropagation();openModal('auth')">Autentica →</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function runSearch() {
+  const q    = document.getElementById('searchInput').value.toLowerCase().trim();
+  const game = document.getElementById('gameSelect').value;
+  currentCards = DB.filter(c => {
+    const mQ = !q || c.name.toLowerCase().includes(q) || c.set.toLowerCase().includes(q);
+    const mG = game === 'all' || c.game === game;
+    const mF = activeFilter === 'all' || c.tags.includes(activeFilter) ||
+               (activeFilter==='nm'||activeFilter==='ex'||activeFilter==='lp'||activeFilter==='psa');
+    return mQ && mG && mF;
+  });
+  sortCards();
+  document.getElementById('results').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function sortCards() {
+  const s = document.getElementById('sortSel').value;
+  if (s === 'spread-desc') currentCards.sort((a,b) => b.spread - a.spread);
+  if (s === 'price-desc')  currentCards.sort((a,b) => b.mid - a.mid);
+  if (s === 'price-asc')   currentCards.sort((a,b) => a.mid - b.mid);
+  if (s === 'trend-desc')  currentCards.sort((a,b) => b.trend - a.trend);
+  renderCards(currentCards);
+}
+
+function setFilter(btn, val) {
+  document.querySelectorAll('.chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeFilter = val;
+  runSearch();
+}
+
+document.getElementById('searchInput').addEventListener('keydown', e => { if (e.key==='Enter') runSearch(); });
+
+// ── MODAL LOGIC ──
+function openCardModal(id) {
+  const c = DB.find(x => x.id === id);
+  if (!c) return;
+  const ebaySpread = calcSpread(c.ebay.on, c.ebay.sold);
+  const cmSpread   = calcSpread(c.cm.on,   c.cm.sold);
+  document.getElementById('modalBody').innerHTML = `
+    <div class="modal-title">${c.name}</div>
+    <div class="modal-sub">${c.set} &nbsp;·&nbsp; aggiornato ${c.updated}</div>
+    <div class="modal-platforms">
+      <div class="modal-plat">
+        <div class="modal-plat-name">eBay</div>
+        <div class="modal-plat-row"><span class="modal-plat-label">In vendita</span><span class="modal-plat-val mono" style="color:var(--red)">${fmt(c.ebay.on)}</span></div>
+        <div class="modal-plat-row"><span class="modal-plat-label">Venduti 90gg</span><span class="modal-plat-val mono" style="color:var(--green)">${fmt(c.ebay.sold)}</span></div>
+        ${ebaySpread!==null?`<div class="modal-plat-spread" style="color:var(--gold)">Spread: +${ebaySpread}% &nbsp;·&nbsp; listing vs sold</div>`:''}
+      </div>
+      <div class="modal-plat">
+        <div class="modal-plat-name">Cardmarket</div>
+        <div class="modal-plat-row"><span class="modal-plat-label">In vendita</span><span class="modal-plat-val mono" style="color:${c.cm.on?'var(--red)':'var(--muted)'}">${fmt(c.cm.on)}</span></div>
+        <div class="modal-plat-row"><span class="modal-plat-label">Venduti recenti</span><span class="modal-plat-val mono" style="color:${c.cm.sold?'var(--green)':'var(--muted)'}">${fmt(c.cm.sold)}</span></div>
+        ${cmSpread!==null?`<div class="modal-plat-spread" style="color:var(--gold)">Spread: +${cmSpread}% &nbsp;·&nbsp; listing vs sold</div>`:''}
+      </div>
+    </div>
+    <div style="background:var(--ink3);border-radius:2px;padding:0.9rem 1rem;margin-bottom:1.2rem">
+      <div style="display:flex;justify-content:space-between;margin-bottom:0.4rem">
+        <span style="font-family:'Fira Code',monospace;font-size:0.64rem;color:var(--muted)">Prezzo reale di mercato (mid)</span>
+        <span style="font-family:'Fraunces',serif;font-size:1.5rem;font-weight:700;color:var(--gold)">${fmt(c.mid)}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between">
+        <span style="font-family:'Fira Code',monospace;font-size:0.62rem;color:var(--green)">↓ ${fmt(c.low)} (basso)</span>
+        <span style="font-family:'Fira Code',monospace;font-size:0.62rem;color:var(--red)">↑ ${fmt(c.high)} (listing max)</span>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-gold" style="flex:1;justify-content:center;font-size:0.72rem" onclick="closeModal();openModal('auth')">Autentica questa carta →</button>
+      <button class="btn btn-ghost" style="font-size:0.72rem" onclick="closeModal();openModal('alert')">Alert prezzi</button>
+    </div>
+  `;
+  document.getElementById('modal').classList.add('open');
+}
+
+const MODALS = {
+  valutazione: `
+    <div class="modal-title">Valutazione di Mercato</div>
+    <div class="modal-sub">€ 4.90 per carta &nbsp;·&nbsp; Report PDF in 24h &nbsp;·&nbsp; Rimborso garantito</div>
+    <div class="form-group" style="margin-bottom:0.9rem">
+      <label class="form-label">Nome della carta</label>
+      <input class="form-input" placeholder="es. Charizard Base Set Holo 1st Edition">
+    </div>
+    <div class="form-group" style="margin-bottom:0.9rem">
+      <label class="form-label">Condizione</label>
+      <select class="form-input"><option>Near Mint (NM)</option><option>Excellent (EX)</option><option>Good (GD)</option><option>Lightly Played (LP)</option><option>Played (P)</option></select>
+    </div>
+    <div class="form-group" style="margin-bottom:1.4rem">
+      <label class="form-label">La tua email</label>
+      <input type="email" class="form-input" placeholder="tuaemail@esempio.com">
+    </div>
+    <button class="btn btn-gold" style="width:100%;justify-content:center;padding:0.9rem">Procedi al pagamento · € 4.90 →</button>
+    <p style="margin-top:0.7rem;font-family:'Fira Code',monospace;font-size:0.62rem;color:var(--muted);text-align:center">Pagamento sicuro via Stripe &nbsp;·&nbsp; Rimborso se non soddisfatto</p>
+  `,
+  auth: `
+    <div class="modal-title">Valutazione +<br>Autenticazione</div>
+    <div class="modal-sub">€ 14.90 per carta &nbsp;·&nbsp; Certificato digitale in 48h &nbsp;·&nbsp; Rimborso se falsa</div>
+    <div class="form-group" style="margin-bottom:0.9rem">
+      <label class="form-label">Nome della carta</label>
+      <input class="form-input" placeholder="es. Pikachu Illustrator Promo 1997">
+    </div>
+    <div class="form-group" style="margin-bottom:0.9rem">
+      <label class="form-label">Foto fronte + retro (HD)</label>
+      <input type="file" class="form-input" accept="image/*" multiple style="padding:0.55rem">
+    </div>
+    <div class="form-group" style="margin-bottom:1.4rem">
+      <label class="form-label">La tua email</label>
+      <input type="email" class="form-input" placeholder="tuaemail@esempio.com">
+    </div>
+    <button class="btn btn-gold" style="width:100%;justify-content:center;padding:0.9rem">Procedi al pagamento · € 14.90 →</button>
+    <p style="margin-top:0.7rem;font-family:'Fira Code',monospace;font-size:0.62rem;color:var(--muted);text-align:center">Se la carta risulta falsa → rimborso integrale garantito</p>
+  `,
+  alert: `
+    <div class="modal-title">Alert di Prezzo</div>
+    <div class="modal-sub">3 alert gratuiti per iniziare &nbsp;·&nbsp; Illimitati a € 2.90/mese</div>
+    <div class="form-group" style="margin-bottom:0.9rem">
+      <label class="form-label">Carta da monitorare</label>
+      <input class="form-input" placeholder="es. Black Lotus Alpha">
+    </div>
+    <div class="form-group" style="margin-bottom:0.9rem">
+      <label class="form-label">Notifiche via</label>
+      <select class="form-input"><option>Telegram</option><option>Email</option><option>Telegram + Email</option></select>
+    </div>
+    <div class="form-group" style="margin-bottom:1.4rem">
+      <label class="form-label">@username Telegram o email</label>
+      <input class="form-input" placeholder="@il_tuo_username">
+    </div>
+    <button class="btn btn-gold" style="width:100%;justify-content:center;padding:0.9rem">Attiva alert gratuito →</button>
+    <p style="margin-top:0.7rem;font-family:'Fira Code',monospace;font-size:0.62rem;color:var(--muted);text-align:center">Nessuna carta di credito richiesta per i 3 alert gratuiti</p>
+  `
+};
+
+function openModal(type) {
+  document.getElementById('modalBody').innerHTML = MODALS[type] || '';
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+function closeModalBg(e) { if (e.target.id==='modal') closeModal(); }
+
+// ── THRESHOLD BUTTONS ──
+function setThresh(btn) {
+  document.querySelectorAll('#threshBtns .thresh-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ── ALERT FORM SUBMIT ──
+function submitAlert(btn) {
+  btn.textContent = '✓ Alert attivato!';
+  btn.style.background = 'var(--green)';
+  setTimeout(() => { btn.textContent = 'Attiva alert gratuito →'; btn.style.background = ''; }, 3000);
+}
+
+// ── TICKER ──
+const TICKER_DATA = [
+  { name:"Charizard Base Set",    price:"€ 1.780", delta:"+8.2%",  up:true  },
+  { name:"Black Lotus Alpha",     price:"€ 7.800", delta:"+2.4%",  up:true  },
+  { name:"Pikachu Illustrator",   price:"€195.000",delta:"-3.1%",  up:false },
+  { name:"Blue-Eyes WD 1st",      price:"€ 780",   delta:"+5.3%",  up:true  },
+  { name:"Mew Trophy Card",       price:"€14.200", delta:"+14.7%", up:true  },
+  { name:"Ancestral Recall Beta", price:"€ 3.400", delta:"-1.8%",  up:false },
+  { name:"Luffy Alt Art OP-01",   price:"€ 280",   delta:"+22.1%", up:true  },
+  { name:"Charizard ex Full Art", price:"€ 124",   delta:"+11.4%", up:true  },
+];
+function buildTicker() {
+  const items = [...TICKER_DATA, ...TICKER_DATA];
+  document.getElementById('ticker').innerHTML = items.map(t => `
+    <div class="ticker-item">
+      <span class="ticker-name mono">${t.name}</span>
+      <span class="ticker-price mono">${t.price}</span>
+      <span class="ticker-delta mono ${t.up?'up':'dn'}">${t.delta}</span>
+    </div>`).join('');
+}
+buildTicker();
+
+// ── MOBILE NAV ──
+document.getElementById('burger').addEventListener('click', () => {
+  document.getElementById('navLinks').classList.toggle('mob-open');
+});
+
+// ── SCROLL REVEAL ──
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+}, { threshold: 0.08 });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+// ── INITIAL RENDER ──
+renderCards(DB);
+</script>
+</body>
+</html>
